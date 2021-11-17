@@ -2,7 +2,7 @@ const express = require('express');
 var cors = require('cors');
 const app = express();
 require('dotenv').config();
-
+const tokenGen = require("./tokenGenerator");
 
 const port = process.env.PORT || 5000;
 
@@ -13,6 +13,7 @@ app.use(express.json());
 
 // connect to mongoDB
 const { MongoClient } = require('mongodb');
+const tokenGenerator = require('./tokenGenerator');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@mflix.feluh.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -22,7 +23,42 @@ async function run() {
     try{
 
         await client.connect();
+        const database = client.db("urlShortener");
+        const urlsCollection = database.collection('urls');
         console.log("Connected to database");
+
+        app.post('/shortUrl', async(req,res) => {
+            const {longUrl} = req.body;
+            
+            const urlcode = tokenGenerator(1234345);
+            
+            
+            const query = {longUrl:longUrl};
+
+            try{
+                const url = await urlsCollection.findOne(query);
+
+                if(url){
+                    res.json(url);
+                }
+                else{
+                    const shortUrl = "http://localhost:5000/" + urlcode;
+                    const doc = {
+                        longUrl : longUrl,
+                        urlcode : urlcode,
+                        shortUrl : shortUrl
+                    }
+        
+                    const result = await urlsCollection.insertOne(doc);
+                }
+            }
+            catch(error){
+                console.log(error);
+                res.json(error.massage)
+            }
+
+           
+        })
        
     }
     catch(err){
