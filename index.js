@@ -25,14 +25,9 @@ async function run() {
         await client.connect();
         const database = client.db("urlShortener");
         const urlsCollection = database.collection('urls');
-        console.log("Connected to database");
 
         app.post('/shortUrl', async(req,res) => {
             const {longUrl} = req.body;
-            
-            const urlcode = tokenGenerator(1234345);
-            
-            
             const query = {longUrl:longUrl};
 
             try{
@@ -42,6 +37,11 @@ async function run() {
                     res.json(url);
                 }
                 else{
+                    
+                    const count =await urlsCollection.countDocuments();
+                    let id = 1000000000+ count; 
+                    
+                    const urlcode = tokenGenerator(id);
                     const shortUrl = "http://localhost:5000/" + urlcode;
                     const doc = {
                         longUrl : longUrl,
@@ -50,7 +50,11 @@ async function run() {
                     }
         
                     const result = await urlsCollection.insertOne(doc);
+                    res.json(result);
+                    
                 }
+
+
             }
             catch(error){
                 console.log(error);

@@ -1,6 +1,4 @@
-// id = 11123111341;
- 
-const tokenGenerator = function(id) {
+ const tokenGenerator = function(id) {
     const Base62 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     const baseSize = Base62.length;
     let tokenarray = [];
@@ -13,10 +11,10 @@ const tokenGenerator = function(id) {
           }
         
      token = tokenarray.join(""); 
+    
      return token;
       
   }
- //   tokenGenerator(id);
 
- 
+
 module.exports = tokenGenerator;
