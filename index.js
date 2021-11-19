@@ -26,8 +26,16 @@ async function run() {
         const database = client.db("urlShortener");
         const urlsCollection = database.collection('urls');
 
+        // GET list of url from database
+        app.get('/url', async(req,res) => {
+            const cursor = urlsCollection.find({});
+            const urlList = await cursor.toArray();
+            res.send(urlList);
+            
+        })
+
         // POST url into database
-        app.post('/shortUrl', async(req,res) => {
+        app.post('/url', async(req,res) => {
             const {longUrl} = req.body;
             const query = {longUrl:longUrl};
 
@@ -64,6 +72,7 @@ async function run() {
 
            
         })
+
 
 
         app.get('/:urlcode', async(req,res) => {
