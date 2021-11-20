@@ -3,6 +3,7 @@ var cors = require('cors');
 const app = express();
 require('dotenv').config();
 const tokenGen = require("./tokenGenerator");
+const ObjectId = require('mongodb').ObjectId;
 
 const port = process.env.PORT || 5000;
 
@@ -27,7 +28,7 @@ async function run() {
         const urlsCollection = database.collection('urls');
 
         // GET list of url from database
-        app.get('/url', async(req,res) => {
+        app.get('/', async(req,res) => {
             const cursor = urlsCollection.find({});
             const urlList = await cursor.toArray();
             res.send(urlList);
@@ -38,6 +39,7 @@ async function run() {
         app.post('/url', async(req,res) => {
             const {longUrl} = req.body;
             const query = {longUrl:longUrl};
+
 
             try{
                 const url = await urlsCollection.findOne(query);
@@ -52,14 +54,16 @@ async function run() {
 
                     const urlcode = tokenGenerator(id);
                     const shortUrl = "http://localhost:5000/" + urlcode;
+                    const visitCount = 0;
                     const doc = {
                         longUrl : longUrl,
                         urlcode : urlcode,
-                        shortUrl : shortUrl
+                        shortUrl : shortUrl,
+                        visitCount: visitCount
                     }
         
                     const result = await urlsCollection.insertOne(doc);
-                    res.json(result);
+                    res.json(req.body);
                     
                 }
 
@@ -73,6 +77,15 @@ async function run() {
            
         })
 
+        // url count
+        app.put('/url/visits/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {_id : ObjectId(id)};
+            const options = { upsert: true };
+            const updateDoc = {$inc : {visitCount: 1}}
+
+            const result = await urlsCollection.updateOne(query,updateDoc,options);
+        })
 
 
         app.get('/:urlcode', async(req,res) => {
@@ -104,11 +117,6 @@ async function run() {
 
 run().catch(console.dir);
 
-
-
-app.get('/', (req,res) => {
-    res.send('Hello from express ');
-})
 
 
 app.listen(port, () => {
