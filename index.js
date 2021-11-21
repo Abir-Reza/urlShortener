@@ -40,7 +40,6 @@ async function run() {
             const {longUrl} = req.body;
             const query = {longUrl:longUrl};
 
-
             try{
                 const url = await urlsCollection.findOne(query);
 
@@ -54,30 +53,41 @@ async function run() {
 
                     const urlcode = tokenGenerator(id);
                     const shortUrl = "http://localhost:5000/" + urlcode;
+                    const shortenAttempt = 1;
                     const visitCount = 0;
+                    
                     const doc = {
                         longUrl : longUrl,
                         urlcode : urlcode,
                         shortUrl : shortUrl,
+                        attemptCount : shortenAttempt,
                         visitCount: visitCount
+                        
                     }
         
                     const result = await urlsCollection.insertOne(doc);
                     res.json(req.body);
                     
                 }
-
-
             }
             catch(error){
-                console.log(error);
                 res.json(error.massage)
-            }
-
-           
+            }          
         })
 
-        // url count
+
+        // shoten attempt count
+        app.put('/url', async(req,res) => {
+            const {longUrl} = req.body;
+            const filter = {longUrl: longUrl};   
+            // const options = {upsert: true};
+            const updateDoc = {$inc : {attemptCount: 1}}
+
+            const result = await urlsCollection.updateOne(filter, updateDoc);
+            res.json(result);
+        })
+
+        // url visit count
         app.put('/url/visits/:id', async(req, res) => {
             const id = req.params.id;
             const query = {_id : ObjectId(id)};
@@ -105,10 +115,8 @@ async function run() {
             }
             catch(error){
                 res.json(error);
-            }
-            
-        })
-       
+            }            
+        })       
     }
     catch(err){
         console.error(err.massage);
