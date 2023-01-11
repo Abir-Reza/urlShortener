@@ -1,8 +1,6 @@
 # Project Title: Url Shortener
 * **Short Description:** An web application where, a user can enter an arbitrary URL "X" and gets a shortened URL in return.
 
-## Live Link:
-https://url-shortener-4.web.app/
 
 ## Client-Side code link:
 https://github.com/Abir-Reza/URLShotener
